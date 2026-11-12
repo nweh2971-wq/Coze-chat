@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eaf5ff">
+<title>Coze Chat — Final Build</title>
+<style>
+:root{--blue:#8fc8f4;--pale:#eaf6ff;--ink:#203247;--muted:#718397;--line:#e5edf4}
+*{box-sizing:border-box}body{margin:0;background:#f3f9ff;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{border:0;border-radius:14px;padding:13px 16px;background:#8fc8f4;color:#17334d;font-weight:700;cursor:pointer}
+.wrap{max-width:520px;margin:auto;min-height:100dvh;padding:22px 18px 95px}
+.brand{font-size:28px;font-weight:800;margin:12px 0 4px}.sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+.card{background:white;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 8px 24px #5c9ac010;margin:14px 0}
+h2{font-size:20px;margin:0 0 16px}label{display:block;font-size:13px;color:#60758a;margin:12px 0 6px}
+input,textarea,select{width:100%;border:1px solid #dce8f2;border-radius:13px;padding:13px;background:#fbfdff;color:var(--ink);outline:none}
+textarea{min-height:78px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:#8fc8f4}
+.full{width:100%;margin-top:14px}.ghost{background:#edf7ff;color:#315c7d}
+.switch{color:#347cb5;text-align:center;margin-top:16px;font-size:14px;cursor:pointer}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}.hidden{display:none!important}
+.top{display:flex;align-items:center;justify-content:space-between}.avatar{width:42px;height:42px;border-radius:50%;background:#e0f2ff;display:grid;place-items:center;font-weight:800}
+.balance{background:#eaf6ff;border-radius:16px;padding:14px;margin-top:16px}.muted{color:var(--muted);font-size:13px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 4px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
+.nav button{background:transparent;padding:8px 10px;font-size:12px;color:#60758a}.nav button.active{color:#267bb8;background:#edf7ff}
+#status{font-size:13px;color:#b14d4d;min-height:18px;margin-top:10px}
+.character{border:1px solid var(--line);padding:14px;border-radius:16px;margin:10px 0;background:#fff}
+.character h3{margin:0 0 6px}.tag{display:inline-block;background:#edf7ff;border-radius:20px;padding:5px 9px;font-size:11px;color:#42769d;margin-top:8px}
+.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1;padding:10px;font-size:12px}
+.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 18px}.choice{width:100%;margin:0}.photoBox{display:flex;align-items:center;gap:14px;background:#f6fbff;border:1px dashed #b9dafa;padding:14px;border-radius:16px}.photoPreview{width:76px;height:76px;flex-shrink:0;border-radius:50%;background:#e5f4ff;display:grid;place-items:center;color:#5799ca;font-size:30px;overflow:hidden;background-size:cover;background-position:center}.photoPreview img{width:100%;height:100%;object-fit:cover}.largeText{min-height:190px;line-height:1.55}.counter{text-align:right;color:#7891a5;font-size:12px;margin-top:5px}
+
+.searchWrap{display:flex;gap:8px;align-items:center;margin:14px 0}
+.searchWrap input{flex:1;min-width:0;margin:0}
+.searchWrap button{width:auto;white-space:nowrap;margin:0;padding:12px}
+
+.storyCard{cursor:pointer;transition:transform .15s ease}
+.storyCard:active{transform:scale(.99)}
+.storyCover{width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-bottom:10px}
+.storyDetailText{white-space:pre-wrap;line-height:1.6}
+.storyMeta{color:#7891a5;font-size:13px;margin:8px 0 14px}
+.storyActionRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.storyActionRow button{flex:1;min-width:120px}
+.roleplayMessages{min-height:220px;max-height:48vh;overflow:auto;background:#f5faff;border:1px solid var(--line);border-radius:16px;padding:12px;margin:14px 0}
+.roleplayBubble{max-width:88%;padding:10px 12px;border-radius:14px;margin:8px 0;white-space:pre-wrap;line-height:1.45;font-size:14px}
+.roleplayBubble.user{margin-left:auto;background:#dff1ff}
+.roleplayBubble.system{background:#fff;border:1px solid var(--line);color:#65798c}
+.roleplayComposer{display:flex;gap:8px;align-items:end}
+.roleplayComposer textarea{flex:1;min-width:0;min-height:48px;max-height:120px}
+.roleplayComposer button{padding:13px 15px}
+.roleplayNotice{background:#edf7ff;color:#55758f;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;margin-top:10px}
+.roleplayHead{margin-top:16px}
+</style>
+<!-- Character artwork is static only: no GIF, animation, 3D or video avatars. -->
+</head>
+<body>
+<main class="wrap">
+  <div class="brand">Coze Chat <span style="color:#7bb9e8">✦</span></div>
+  <div class="sub">Myanmar · English · 中文 · Final Build</div>
+  <section id="auth">
+    <div class="card">
+      <h2 id="formTitle">Welcome back</h2>
+      <div id="nameField" class="hidden"><label>Username</label><input id="username" autocomplete="username" placeholder="Your username"></div>
+      <label>Email</label><input id="email" type="email" autocomplete="email" placeholder="name@example.com">
+      <label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+      <button class="full" id="submitBtn">Log in</button>
+      <div class="switch" id="switchMode">Create an account</div>
+      <div id="status"></div><div class="note">Never share your password with anyone.</div>
+    </div>
+  </section>
+  <section id="app" class="hidden">
+    <div class="top"><div><div class="muted">Welcome to Coze Chat</div><h2 id="hello" style="margin:4px 0">Hello</h2></div><div class="avatar" id="avatar">C</div></div>
+    <div class="balance"><b>🪙 Coins</b><div class="muted">Your Coins balance will appear here when the wallet feature is added.</div></div>
+    <div class="card" id="homePanel"><h2>Start exploring</h2><p class="muted">Discover characters and create your own.</p><p class="note">Final Build includes the unified feature hub. AI-generated replies, background character activity, voice/video calls, secure age verification and multi-user real-time features require server-side services before they can be activated.</p><button class="full" onclick="showTab('discover')">Explore characters</button><button class="full ghost" onclick="showTab('create');selectCreate('character')">Create a character</button><button class="full ghost" onclick="newStory()">Create a story</button><button class="full ghost" onclick="showTab('world')">Open Character World</button></div>
+    <div class="card hidden" id="discoverPanel"><h2>Discover characters</h2><p class="muted">Public characters created by the community.</p><div class="searchWrap"><input id="discoverSearch" type="search" placeholder="Search characters or stories by name..." aria-label="Search characters or stories"><button class="ghost" id="clearSearch" type="button">Clear</button></div><button class="ghost" onclick="loadCharacters()">Refresh</button><h3>Characters</h3><div id="publicList"></div><h3>Stories</h3><div id="publicStories"></div></div>
+    <div class="card hidden" id="storyDetailPanel">
+      <button class="ghost" id="backToDiscover" type="button">← Back to Discover</button>
+      <div id="storyDetailContent"></div>
+    </div>
+    <div class="card hidden" id="roleplayPanel">
+      <button class="ghost" id="backToStory" type="button">← Back to Story</button>
+      <div class="roleplayHead"><h2 id="roleplayTitle">Story Roleplay</h2><div class="muted" id="roleplayCharacter"></div></div>
+      <div class="roleplayNotice" id="roleplayNotice">AI character replies will be enabled when the AI service is connected. Your messages can be saved here.</div>
+      <div id="roleplayMessages" class="roleplayMessages"></div>
+      <div class="roleplayComposer"><textarea id="roleplayInput" rows="2" placeholder="Write your action or dialogue..."></textarea><button id="sendRoleplay" type="button">Send</button></div>
+      <div class="muted" id="roleplayStatus"></div>
+    </div>
+
+    <div class="card hidden" id="worldPanel">
+      <h2>Coze Chat World</h2>
+      <p class="muted">Character Phone, Diary, fictional bank, groups, social life and world tools.</p>
+      <div class="choiceGrid">
+        <button class="choice" onclick="openWorldFeature('phone')">📱 Character Phone</button>
+        <button class="choice" onclick="openWorldFeature('diary')">📔 Diary</button>
+        <button class="choice" onclick="openWorldFeature('bank')">🏦 Fictional Bank</button>
+        <button class="choice" onclick="openWorldFeature('groups')">👥 Group Chat</button>
+        <button class="choice" onclick="openWorldFeature('social')">🌐 Social Media</button>
+        <button class="choice" onclick="openWorldFeature('relationships')">💗 Relationships</button>
+        <button class="choice" onclick="openWorldFeature('life')">🗓 Daily Life</button>
+        <button class="choice" onclick="openWorldFeature('world')">🗺 World Creator</button>
+        <button class="choice" onclick="openWorldFeature('memories')">🧠 Memories & Secrets</button>
+        <button class="choice" onclick="openWorldFeature('events')">🎉 Events & Calendar</button>
+        <button class="choice" onclick="openWorldFeature('gallery')">🖼 Memories Album</button>
+        <button class="choice" onclick="openWorldFeature('settings')">⚙ Privacy & Settings</button>
+      </div>
+      <div id="worldFeatureContent"></div>
+    </div>
+    <div class="card hidden" id="createPanel"><h2>Create</h2>
+      <div class="choiceGrid"><button class="choice active" id="chooseCharacter" type="button">✦ Character</button><button class="choice ghost" id="chooseStory" type="button">▤ Story</button></div>
+      <div id="characterForm"><h3 id="createTitle">Create a character</h3>
+        <label>Character image</label><div class="photoBox"><div class="photoPreview" id="charPhotoPreview">✦</div><input id="charPhoto" type="file" accept="image/*"></div>
+        <label>Character name * (max 40)</label><input id="charName" maxlength="40" placeholder="Enter character name">
+        <label>Gender *</label><select id="charGender"><option value="">Choose gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+        <h3>Creator-written character profile</h3>
+        <label>Age</label><input id="charAge" placeholder="Age">
+        <label>Height</label><input id="charHeight" placeholder="e.g. 180 cm">
+        <label>Appearance</label><textarea id="charAppearance" placeholder="Describe the character's appearance"></textarea>
+        <label>Personality</label><textarea id="charPersonality" placeholder="Describe personality and behavior"></textarea>
+        <label>Occupation</label><input id="charOccupation" placeholder="Occupation">
+        <label>Relationship status</label><input id="charRelationship" placeholder="Single, married, complicated...">
+        <label>Likes / Dislikes</label><textarea id="charLikes" placeholder="Likes and dislikes"></textarea>
+        <label>Secrets (creator-defined)</label><textarea id="charSecrets" placeholder="Private character background / secrets"></textarea>
+        <label>About this character * (max 7000)</label><textarea id="charAbout" maxlength="7000" class="largeText" placeholder="Write everything here — personality, background, appearance, speaking style, relationships..."></textarea><div class="counter" id="charCount">0/7000</div>
+        <label>First greeting (optional)</label><textarea id="charGreeting" placeholder="The first message the character sends"></textarea>
+        <label>Visibility</label><select id="charVisibility"><option value="public">Public — everyone can discover</option><option value="private">Private — only you</option><option value="unlisted">Unlisted — hidden from Discover</option></select>
+        <button class="full" id="saveCharacter">Create character</button><button class="full ghost hidden" id="cancelEdit">Cancel edit</button><div id="charStatus"></div>
+      </div>
+      <div id="storyForm" class="hidden"><h3>Create a story</h3>
+        <label>Story cover image (optional)</label><input id="storyPhoto" type="file" accept="image/*">
+        <label>Story title *</label><input id="storyTitle" maxlength="80" placeholder="Enter story title">
+        <label>Story description * (max 7000)</label><textarea id="storyDescription" maxlength="7000" class="largeText" placeholder="Describe the story, its plot and atmosphere..."></textarea><div class="counter" id="storyCount">0/7000</div>
+        <label>World / setting</label><textarea id="storyWorld" placeholder="Era, location, world rules..."></textarea>
+        <label>Main characters and NPCs</label><textarea id="storyCast" placeholder="List the main characters and NPCs..."></textarea>
+        <label>User's role</label><textarea id="storyRole" placeholder="Who will the user be in this story?"></textarea>
+        <label>Visibility</label><select id="storyVisibility"><option value="public">Public — everyone can discover</option><option value="private">Private — only you</option><option value="unlisted">Unlisted — hidden from Discover</option></select>
+        <button class="full" id="saveStory">Create story</button><div id="storyStatus"></div>
+      </div>
+    </div>
+    <div class="card hidden" id="profilePanel"><h2>Your profile</h2><p id="profileEmail" class="muted"></p><h3>My characters</h3><div id="myList"></div><h3>My stories</h3><div id="myStories"></div><button class="full ghost" id="logoutBtn">Log out</button></div>
+  </section>
+</main>
+<nav class="nav hidden" id="nav">
+<button class="active" data-tab="home" onclick="showTab('home')">⌂<br>Home</button>
+<button data-tab="discover" onclick="showTab('discover')">⌕<br>Discover</button>
+<button data-tab="create" onclick="showTab('create');selectCreate('character')">＋<br>Create</button>
+<button data-tab="world" onclick="showTab('world')">✦<br>World</button>
+<button data-tab="profile" onclick="showTab('profile')">◯<br>Profile</button>
+</nav>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+// Coze Chat Final Build: interactive local simulation modules.
+// These modules are fictional app data, not access to a real person's phone or bank.
+const worldStoreKey='coze_world_final_v1';
+function worldStore(){try{return JSON.parse(localStorage.getItem(worldStoreKey)||'{}')}catch(e){return {}}}
+function saveWorldStore(v){localStorage.setItem(worldStoreKey,JSON.stringify(v))}
+function safeText(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const worldLabels={
+ phone:['Character Phone','Messages, notes, call history, fictional browser history and photo album.'],
+ diary:['Diary','Creator-approved character diary entries and story memories.'],
+ bank:['Fictional Bank','Imaginary balance, income, expenses and transfers inside the story world only.'],
+ groups:['Group Chat','Create a fictional group and add character names. Multi-character AI replies require a connected AI backend.'],
+ social:['Character Social Media','Fictional posts, comments and likes.'],
+ relationships:['Relationships','Track friendship, trust, affection, rivalry and jealousy as story variables.'],
+ life:['Daily Life Schedule','Work, school, sleep, travel and personal routines.'],
+ world:['World Creator','Create fictional places, factions, countries and lore.'],
+ memories:['Memories & Secrets','Review and manage fictional character memories and secrets.'],
+ events:['Events & Calendar','Birthdays, anniversaries, festivals and story events.'],
+ gallery:['Memories Album','Save captions and references for shared fictional memories.'],
+ settings:['Privacy & Settings','Visibility, content preferences, account safety and data export.']
+};
+function openWorldFeature(key){
+ const root=document.getElementById('worldFeatureContent'); if(!root)return;
+ const store=worldStore(); const data=store[key]||[];
+ const [title,desc]=worldLabels[key]||['Feature',''];
+ root.innerHTML=`<div class="card" style="margin:14px 0;background:#f8fcff"><h3>${title}</h3><p class="muted">${desc}</p><div id="worldItems"></div><label>New entry</label><textarea id="worldEntry" placeholder="Write something for ${title}..."></textarea><button class="full" id="worldSave">Save entry</button><p class="note">Saved on this device as fictional demo data. Cloud sync and AI automation need secure backend services.</p></div>`;
+ const list=root.querySelector('#worldItems');
+ if(key==='bank'){
+   const balance=Number(store.bankBalance||1000);
+   list.innerHTML=`<div class="balance"><b>Fictional balance</b><h2>${balance.toLocaleString()} Coins</h2></div><label>Transfer amount</label><input id="transferAmount" type="number" min="1" placeholder="Amount"><label>Recipient character</label><input id="transferTo" placeholder="Character name"><button class="full ghost" id="transferBtn">Transfer fictional Coins</button>`;
+   root.querySelector('#transferBtn').onclick=()=>{const n=Number(root.querySelector('#transferAmount').value);const to=root.querySelector('#transferTo').value.trim();if(!Number.isFinite(n)||n<=0||n>Number(store.bankBalance||1000)||!to){alert('Amount နဲ့ လက်ခံသူကို မှန်ကန်စွာ ဖြည့်ပါ။');return}store.bankBalance=Number(store.bankBalance||1000)-n;store.bankTransactions=[{text:`Sent ${n} Coins to ${to}`,date:new Date().toLocaleString()},...(store.bankTransactions||[])];saveWorldStore(store);openWorldFeature('bank')};
+   (store.bankTransactions||[]).forEach(x=>{const p=document.createElement('p');p.className='muted';p.textContent=x.text+' · '+x.date;list.append(p)});
+ } else if(key==='groups'){
+   list.innerHTML='<label>Group name</label><input id="groupName" placeholder="Group name"><label>Members (character names, comma separated)</label><input id="groupMembers" placeholder="Character A, Character B"><button class="full ghost" id="createGroup">Create group</button><div id="groupList"></div>';
+   (store.groups||[]).forEach(g=>{const p=document.createElement('p');p.textContent=g.name+' — '+g.members.join(', ');list.append(p)});
+   root.querySelector('#createGroup').onclick=()=>{const name=root.querySelector('#groupName').value.trim(),members=root.querySelector('#groupMembers').value.split(',').map(x=>x.trim()).filter(Boolean);if(!name)return alert('Group name ဖြည့်ပါ။');store.groups=[...(store.groups||[]),{name,members}];saveWorldStore(store);openWorldFeature('groups')};
+ } else {
+   data.forEach(item=>{const p=document.createElement('p');p.className='muted';p.textContent=item.text+' · '+item.date;list.append(p)});
+ }
+ root.querySelector('#worldSave').onclick=()=>{const text=root.querySelector('#worldEntry').value.trim();if(!text)return;store[key]=[{text,date:new Date().toLocaleString()},...(store[key]||[])];saveWorldStore(store);openWorldFeature(key)};
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
+// Coze Chat Final Build: interactive local simulation modules.
+// These modules are fictional app data, not access to a real person's phone or bank.
+const worldStoreKey='coze_world_final_v1';
+function worldStore(){try{return JSON.parse(localStorage.getItem(worldStoreKey)||'{}')}catch(e){return {}}}
+function saveWorldStore(v){localStorage.setItem(worldStoreKey,JSON.stringify(v))}
+function safeText(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const worldLabels={
+ phone:['Character Phone','Messages, notes, call history, fictional browser history and photo album.'],
+ diary:['Diary','Creator-approved character diary entries and story memories.'],
+ bank:['Fictional Bank','Imaginary balance, income, expenses and transfers inside the story world only.'],
+ groups:['Group Chat','Create a fictional group and add character names. Multi-character AI replies require a connected AI backend.'],
+ social:['Character Social Media','Fictional posts, comments and likes.'],
+ relationships:['Relationships','Track friendship, trust, affection, rivalry and jealousy as story variables.'],
+ life:['Daily Life Schedule','Work, school, sleep, travel and personal routines.'],
+ world:['World Creator','Create fictional places, factions, countries and lore.'],
+ memories:['Memories & Secrets','Review and manage fictional character memories and secrets.'],
+ events:['Events & Calendar','Birthdays, anniversaries, festivals and story events.'],
+ gallery:['Memories Album','Save captions and references for shared fictional memories.'],
+ settings:['Privacy & Settings','Visibility, content preferences, account safety and data export.']
+};
+function openWorldFeature(key){
+ const root=document.getElementById('worldFeatureContent'); if(!root)return;
+ const store=worldStore(); const data=store[key]||[];
+ const [title,desc]=worldLabels[key]||['Feature',''];
+ root.innerHTML=`<div class="card" style="margin:14px 0;background:#f8fcff"><h3>${title}</h3><p class="muted">${desc}</p><div id="worldItems"></div><label>New entry</label><textarea id="worldEntry" placeholder="Write something for ${title}..."></textarea><button class="full" id="worldSave">Save entry</button><p class="note">Saved on this device as fictional demo data. Cloud sync and AI automation need secure backend services.</p></div>`;
+ const list=root.querySelector('#worldItems');
+ if(key==='bank'){
+   const balance=Number(store.bankBalance||1000);
+   list.innerHTML=`<div class="balance"><b>Fictional balance</b><h2>${balance.toLocaleString()} Coins</h2></div><label>Transfer amount</label><input id="transferAmount" type="number" min="1" placeholder="Amount"><label>Recipient character</label><input id="transferTo" placeholder="Character name"><button class="full ghost" id="transferBtn">Transfer fictional Coins</button>`;
+   root.querySelector('#transferBtn').onclick=()=>{const n=Number(root.querySelector('#transferAmount').value);const to=root.querySelector('#transferTo').value.trim();if(!Number.isFinite(n)||n<=0||n>Number(store.bankBalance||1000)||!to){alert('Amount နဲ့ လက်ခံသူကို မှန်ကန်စွာ ဖြည့်ပါ။');return}store.bankBalance=Number(store.bankBalance||1000)-n;store.bankTransactions=[{text:`Sent ${n} Coins to ${to}`,date:new Date().toLocaleString()},...(store.bankTransactions||[])];saveWorldStore(store);openWorldFeature('bank')};
+   (store.bankTransactions||[]).forEach(x=>{const p=document.createElement('p');p.className='muted';p.textContent=x.text+' · '+x.date;list.append(p)});
+ } else if(key==='groups'){
+   list.innerHTML='<label>Group name</label><input id="groupName" placeholder="Group name"><label>Members (character names, comma separated)</label><input id="groupMembers" placeholder="Character A, Character B"><button class="full ghost" id="createGroup">Create group</button><div id="groupList"></div>';
+   (store.groups||[]).forEach(g=>{const p=document.createElement('p');p.textContent=g.name+' — '+g.members.join(', ');list.append(p)});
+   root.querySelector('#createGroup').onclick=()=>{const name=root.querySelector('#groupName').value.trim(),members=root.querySelector('#groupMembers').value.split(',').map(x=>x.trim()).filter(Boolean);if(!name)return alert('Group name ဖြည့်ပါ။');store.groups=[...(store.groups||[]),{name,members}];saveWorldStore(store);openWorldFeature('groups')};
+ } else {
+   data.forEach(item=>{const p=document.createElement('p');p.className='muted';p.textContent=item.text+' · '+item.date;list.append(p)});
+ }
+ root.querySelector('#worldSave').onclick=()=>{const text=root.querySelector('#worldEntry').value.trim();if(!text)return;store[key]=[{text,date:new Date().toLocaleString()},...(store[key]||[])];saveWorldStore(store);openWorldFeature(key)};
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js">
+// Coze Chat Final Build: interactive local simulation modules.
+// These modules are fictional app data, not access to a real person's phone or bank.
+const worldStoreKey='coze_world_final_v1';
+function worldStore(){try{return JSON.parse(localStorage.getItem(worldStoreKey)||'{}')}catch(e){return {}}}
+function saveWorldStore(v){localStorage.setItem(worldStoreKey,JSON.stringify(v))}
+function safeText(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const worldLabels={
+ phone:['Character Phone','Messages, notes, call history, fictional browser history and photo album.'],
+ diary:['Diary','Creator-approved character diary entries and story memories.'],
+ bank:['Fictional Bank','Imaginary balance, income, expenses and transfers inside the story world only.'],
+ groups:['Group Chat','Create a fictional group and add character names. Multi-character AI replies require a connected AI backend.'],
+ social:['Character Social Media','Fictional posts, comments and likes.'],
+ relationships:['Relationships','Track friendship, trust, affection, rivalry and jealousy as story variables.'],
+ life:['Daily Life Schedule','Work, school, sleep, travel and personal routines.'],
+ world:['World Creator','Create fictional places, factions, countries and lore.'],
+ memories:['Memories & Secrets','Review and manage fictional character memories and secrets.'],
+ events:['Events & Calendar','Birthdays, anniversaries, festivals and story events.'],
+ gallery:['Memories Album','Save captions and references for shared fictional memories.'],
+ settings:['Privacy & Settings','Visibility, content preferences, account safety and data export.']
+};
+function openWorldFeature(key){
+ const root=document.getElementById('worldFeatureContent'); if(!root)return;
+ const store=worldStore(); const data=store[key]||[];
+ const [title,desc]=worldLabels[key]||['Feature',''];
+ root.innerHTML=`<div class="card" style="margin:14px 0;background:#f8fcff"><h3>${title}</h3><p class="muted">${desc}</p><div id="worldItems"></div><label>New entry</label><textarea id="worldEntry" placeholder="Write something for ${title}..."></textarea><button class="full" id="worldSave">Save entry</button><p class="note">Saved on this device as fictional demo data. Cloud sync and AI automation need secure backend services.</p></div>`;
+ const list=root.querySelector('#worldItems');
+ if(key==='bank'){
+   const balance=Number(store.bankBalance||1000);
+   list.innerHTML=`<div class="balance"><b>Fictional balance</b><h2>${balance.toLocaleString()} Coins</h2></div><label>Transfer amount</label><input id="transferAmount" type="number" min="1" placeholder="Amount"><label>Recipient character</label><input id="transferTo" placeholder="Character name"><button class="full ghost" id="transferBtn">Transfer fictional Coins</button>`;
+   root.querySelector('#transferBtn').onclick=()=>{const n=Number(root.querySelector('#transferAmount').value);const to=root.querySelector('#transferTo').value.trim();if(!Number.isFinite(n)||n<=0||n>Number(store.bankBalance||1000)||!to){alert('Amount နဲ့ လက်ခံသူကို မှန်ကန်စွာ ဖြည့်ပါ။');return}store.bankBalance=Number(store.bankBalance||1000)-n;store.bankTransactions=[{text:`Sent ${n} Coins to ${to}`,date:new Date().toLocaleString()},...(store.bankTransactions||[])];saveWorldStore(store);openWorldFeature('bank')};
+   (store.bankTransactions||[]).forEach(x=>{const p=document.createElement('p');p.className='muted';p.textContent=x.text+' · '+x.date;list.append(p)});
+ } else if(key==='groups'){
+   list.innerHTML='<label>Group name</label><input id="groupName" placeholder="Group name"><label>Members (character names, comma separated)</label><input id="groupMembers" placeholder="Character A, Character B"><button class="full ghost" id="createGroup">Create group</button><div id="groupList"></div>';
+   (store.groups||[]).forEach(g=>{const p=document.createElement('p');p.textContent=g.name+' — '+g.members.join(', ');list.append(p)});
+   root.querySelector('#createGroup').onclick=()=>{const name=root.querySelector('#groupName').value.trim(),members=root.querySelector('#groupMembers').value.split(',').map(x=>x.trim()).filter(Boolean);if(!name)return alert('Group name ဖြည့်ပါ။');store.groups=[...(store.groups||[]),{name,members}];saveWorldStore(store);openWorldFeature('groups')};
+ } else {
+   data.forEach(item=>{const p=document.createElement('p');p.className='muted';p.textContent=item.text+' · '+item.date;list.append(p)});
+ }
+ root.querySelector('#worldSave').onclick=()=>{const text=root.querySelector('#worldEntry').value.trim();if(!text)return;store[key]=[{text,date:new Date().toLocaleString()},...(store[key]||[])];saveWorldStore(store);openWorldFeature(key)};
+}
+
+</script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyBvGrrXhdDsIOGBKbqnEKFNog0IixPe6Qg",authDomain:"coze-chat.firebaseapp.com",projectId:"coze-chat",storageBucket:"coze-chat.firebasestorage.app",messagingSenderId:"988730662457",appId:"1:988730662457:web:0ba6ed278d893ae43737e8",measurementId:"G-558ZGJMJS4"};
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();let isRegister=false,editingId=null;
+const $=id=>document.getElementById(id);
+function message(id,t,good=false){$(id).style.color=good?'#247b53':'#b14d4d';$(id).textContent=t}
+$('switchMode').onclick=()=>{isRegister=!isRegister;$('formTitle').textContent=isRegister?'Create account':'Welcome back';$('submitBtn').textContent=isRegister?'Register':'Log in';$('switchMode').textContent=isRegister?'Already have an account? Log in':'Create an account';$('nameField').classList.toggle('hidden',!isRegister);message('status','')};
+$('submitBtn').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value,username=$('username').value.trim();if(!email||!password)return message('status','Email နဲ့ Password ဖြည့်ပါ။');if(isRegister&&!username)return message('status','Username ဖြည့်ပါ။');if(password.length<6)return message('status','Password အနည်းဆုံး ၆ လုံးဖြစ်ရပါမယ်။');$('submitBtn').disabled=true;$('submitBtn').textContent='ခဏစောင့်ပါ…';try{if(isRegister){await auth.createUserWithEmailAndPassword(email,password);if(auth.currentUser)await auth.currentUser.updateProfile({displayName:username})}else await auth.signInWithEmailAndPassword(email,password)}catch(e){const m={'auth/email-already-in-use':'ဒီ Email ကို အသုံးပြုပြီးသားပါ။','auth/invalid-email':'Email ပုံစံ မမှန်ပါ။','auth/weak-password':'Password အားနည်းနေပါတယ်။','auth/user-not-found':'ဒီ Email နဲ့ Account မတွေ့ပါ။','auth/wrong-password':'Password မှားနေပါတယ်။','auth/invalid-credential':'Email သို့မဟုတ် Password မမှန်ပါ။','auth/network-request-failed':'အင်တာနက်ချိတ်ဆက်မှုကို စစ်ပါ။'};message('status',m[e.code]||e.message)}finally{$('submitBtn').disabled=false;$('submitBtn').textContent=isRegister?'Register':'Log in'}};
+auth.onAuthStateChanged(user=>{if(user){$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('nav').classList.remove('hidden');$('hello').textContent='Hello, '+(user.displayName||'there');$('avatar').textContent=(user.displayName||user.email||'C').charAt(0).toUpperCase();$('profileEmail').textContent=user.email||'';showTab('home')}else{$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('nav').classList.add('hidden')}});
+$('logoutBtn').onclick=()=>auth.signOut();
+function showTab(tab){['home','discover','create','profile','storyDetail','roleplay'].forEach(x=>$(`${x}Panel`).classList.toggle('hidden',x!==tab));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='discover')loadCharacters();if(tab==='profile'){loadMyCharacters();loadMyStories()}}
+function selectCreate(which){$('characterForm').classList.toggle('hidden',which!=='character');$('storyForm').classList.toggle('hidden',which!=='story');$('chooseCharacter').classList.toggle('active',which==='character');$('chooseCharacter').classList.toggle('ghost',which!=='character');$('chooseStory').classList.toggle('active',which==='story');$('chooseStory').classList.toggle('ghost',which!=='story')}
+$('chooseCharacter').onclick=()=>selectCreate('character');$('chooseStory').onclick=()=>selectCreate('story');
+$('charAbout').addEventListener('input',()=> $('charCount').textContent=$('charAbout').value.length+'/7000');$('storyDescription').addEventListener('input',()=> $('storyCount').textContent=$('storyDescription').value.length+'/7000');
+let charPhotoData='',storyPhotoData='';
+$('charPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>700000){message('charStatus','ပုံဖိုင် 700KB အောက်ဖြစ်ရပါမယ်။');e.target.value='';return}const r=new FileReader();r.onload=()=>{charPhotoData=r.result;$('charPhotoPreview').innerHTML='<img alt="Character image preview" src="'+charPhotoData+'">'};r.readAsDataURL(f)};
+$('storyPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>700000){message('storyStatus','ပုံဖိုင် 700KB အောက်ဖြစ်ရပါမယ်။');e.target.value='';return}const r=new FileReader();r.onload=()=>storyPhotoData=r.result;r.readAsDataURL(f)};
+function newCharacter(){editingId=null;['charName','charAbout','charGreeting'].forEach(id=>$(id).value='');$('charGender').value='';$('charVisibility').value='public';$('charPhoto').value='';charPhotoData='';$('charPhotoPreview').textContent='✦';$('charCount').textContent='0/7000';$('createTitle').textContent='Create a character';$('saveCharacter').textContent='Create character';$('cancelEdit').classList.add('hidden');message('charStatus','');selectCreate('character');showTab('create')}
+function newStory(){['storyTitle','storyDescription','storyWorld','storyCast','storyRole'].forEach(id=>$(id).value='');$('storyVisibility').value='public';$('storyPhoto').value='';storyPhotoData='';$('storyCount').textContent='0/7000';message('storyStatus','');selectCreate('story');showTab('create')}
+$('cancelEdit').onclick=()=>newCharacter();
+$('saveCharacter').onclick=async()=>{const user=auth.currentUser;if(!user)return message('charStatus','အရင် Login ဝင်ပါ။');const name=$('charName').value.trim(),about=$('charAbout').value.trim(),gender=$('charGender').value;if(!name)return message('charStatus','Character နာမည်ထည့်ပါ။');if(!gender)return message('charStatus','ကျား/မ ရွေးပါ။');if(!about)return message('charStatus','ဇာတ်ကောင်အကြောင်း ရေးပါ။');const data={ownerId:user.uid,ownerName:user.displayName||'User',name,gender,about,description:about,personality:'',background:'',greeting:$('charGreeting').value.trim(),photo:charPhotoData,visibility:$('charVisibility').value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};$('saveCharacter').disabled=true;try{if(editingId)await db.collection('characters').doc(editingId).update(data);else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection('characters').add(data)}message('charStatus','Character သိမ်းပြီးပါပြီ။',true);newCharacter();showTab('profile')}catch(e){message('charStatus','သိမ်းမရပါ: '+e.message)}finally{$('saveCharacter').disabled=false}};
+$('saveStory').onclick=async()=>{const user=auth.currentUser;if(!user)return message('storyStatus','အရင် Login ဝင်ပါ။');const title=$('storyTitle').value.trim(),description=$('storyDescription').value.trim();if(!title||!description)return message('storyStatus','ဇာတ်လမ်းခေါင်းစဉ်နဲ့ အကြောင်းအရာ ဖြည့်ပါ။');const data={ownerId:user.uid,ownerName:user.displayName||'User',title,description,world:$('storyWorld').value.trim(),cast:$('storyCast').value.trim(),userRole:$('storyRole').value.trim(),cover:storyPhotoData,visibility:$('storyVisibility').value,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:firebase.firestore.FieldValue.serverTimestamp()};$('saveStory').disabled=true;try{await db.collection('stories').add(data);message('storyStatus','Story သိမ်းပြီးပါပြီ။',true);newStory();showTab('profile')}catch(e){message('storyStatus','သိမ်းမရပါ: '+e.message+' — Firestore Stories Rules ထည့်ရန်လိုနိုင်ပါတယ်။')}finally{$('saveStory').disabled=false}};
+function cardFor(doc,own=false){const d=doc.data(),el=document.createElement('div');el.className='character';if(d.photo){const im=document.createElement('img');im.src=d.photo;im.alt='';im.style='width:64px;height:64px;border-radius:50%;object-fit:cover;float:right';el.append(im)}const title=document.createElement('h3');title.textContent=d.name||'Unnamed character';const desc=document.createElement('div');desc.className='muted';desc.textContent=d.about||d.description||'No description';const owner=document.createElement('div');owner.className='tag';owner.textContent=(d.ownerName||'Coze Chat user')+' · '+(d.gender||'')+' · '+(d.visibility||'public');el.append(title,desc,owner);if(own){const actions=document.createElement('div');actions.className='actions';const edit=document.createElement('button');edit.className='ghost';edit.textContent='Edit';edit.onclick=()=>editCharacter(doc.id,d);const del=document.createElement('button');del.className='ghost';del.textContent='Delete';del.onclick=()=>deleteCharacter(doc.id);actions.append(edit,del);el.append(actions)}return el}
+function storyCardFor(doc){const d=doc.data(),el=document.createElement('div');el.className='character storyCard';if(d.cover){const im=document.createElement('img');im.className='storyCover';im.src=d.cover;im.alt='Story cover';el.append(im)}const title=document.createElement('h3');title.textContent=d.title||'Untitled story';const desc=document.createElement('div');desc.className='muted';desc.textContent=(d.description||'').slice(0,180)+(String(d.description||'').length>180?'…':'');const tag=document.createElement('div');tag.className='tag';tag.textContent=(d.ownerName||'Coze Chat user')+' · Story';const open=document.createElement('button');open.className='full ghost';open.type='button';open.textContent='Read story';open.onclick=()=>openStoryDetail(doc);el.append(title,desc,tag,open);el.onclick=e=>{if(e.target!==open)openStoryDetail(doc)};return el}
+function addDetailText(parent,label,value){if(!value)return;const h=document.createElement('h3');h.textContent=label;const p=document.createElement('div');p.className='storyDetailText';p.textContent=value;parent.append(h,p)}
+let activeStoryDoc=null,activeSessionRef=null,activeStoryData=null;
+function openStoryDetail(doc){activeStoryDoc=doc;const d=doc.data(),root=$('storyDetailContent');root.innerHTML='';if(d.cover){const img=document.createElement('img');img.className='storyCover';img.src=d.cover;img.alt='Story cover';root.append(img)}const title=document.createElement('h2');title.textContent=d.title||'Untitled story';const meta=document.createElement('div');meta.className='storyMeta';meta.textContent='By '+(d.ownerName||'Coze Chat user')+' · '+(d.visibility||'public');root.append(title,meta);addDetailText(root,'About this story',d.description);addDetailText(root,'World / Setting',d.world);addDetailText(root,'Main characters and NPCs',d.cast);addDetailText(root,"User's role",d.userRole);const actions=document.createElement('div');actions.className='storyActionRow';const join=document.createElement('button');join.type='button';join.textContent='Join Story';join.onclick=()=>joinStory(doc);const back=document.createElement('button');back.type='button';back.className='ghost';back.textContent='Back';back.onclick=()=>showTab('discover');actions.append(join,back);root.append(actions);showTab('storyDetail')}
+function parseStoryCast(cast){return String(cast||'').split(/[\\n,;၊]/).map(x=>x.trim()).filter(Boolean).slice(0,30)}
+async function joinStory(doc){
+ const user=auth.currentUser;if(!user){alert('Story ထဲဝင်ဖို့ အရင် Login ဝင်ပါ။');return}
+ const d=doc.data(),cast=parseStoryCast(d.cast),root=$('storyDetailContent');
+ const old=root.querySelector('.joinSetup');if(old)old.remove();
+ const setup=document.createElement('div');setup.className='joinSetup';
+ const heading=document.createElement('h3');heading.textContent='Choose your role';setup.append(heading);
+ const role=document.createElement('input');role.id='joinUserRole';role.placeholder='သင့်ရဲ့ Role (ဥပမာ - မင်းသား၊ ကျောင်းသား...)';role.value=d.userRole||'';
+ setup.append(role);
+ const characterLabel=document.createElement('label');characterLabel.textContent='Choose a character (optional)';setup.append(characterLabel);
+ const character=document.createElement('select');character.id='joinCharacter';const none=document.createElement('option');none.value='';none.textContent='No character selected';character.append(none);cast.forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;character.append(o)});setup.append(character);
+ const start=document.createElement('button');start.type='button';start.className='full';start.textContent='Start Roleplay';start.onclick=async()=>{
+   start.disabled=true;start.textContent='ခဏစောင့်ပါ…';
+   try{
+     const sessionData={ownerId:user.uid,storyId:doc.id,storyTitle:d.title||'Untitled story',storyDescription:d.description||'',world:d.world||'',cast:d.cast||'',userRole:role.value.trim()||d.userRole||'Participant',selectedCharacter:character.value,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+     const ref=await db.collection('storySessions').add(sessionData);activeSessionRef=ref;activeStoryData=sessionData;
+     $('roleplayTitle').textContent=sessionData.storyTitle;$('roleplayCharacter').textContent=(sessionData.selectedCharacter?('Character: '+sessionData.selectedCharacter+' · '):'')+'Your role: '+sessionData.userRole;
+     $('roleplayMessages').innerHTML='';$('roleplayInput').value='';
+     await addRoleplayBubble('system','Story ထဲကို ဝင်ရောက်ပြီးပါပြီ။ သင့်ရဲ့ ဇာတ်ကောင်အဖြစ် စာရေးပြီး စတင်နိုင်ပါတယ်။');
+     showTab('roleplay');
+   }catch(e){alert('Story ထဲဝင်မရပါ: '+e.message+'။ Firestore Rules ကို Version 6 အတွက် ပြင်ပေးရန်လိုနိုင်ပါတယ်။')}
+   finally{start.disabled=false;start.textContent='Start Roleplay'}
+ };
+ setup.append(start);root.append(setup);setup.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function addRoleplayBubble(kind,textValue){
+ const box=$('roleplayMessages'),bubble=document.createElement('div');bubble.className='roleplayBubble '+kind;bubble.textContent=textValue;box.append(bubble);box.scrollTop=box.scrollHeight;
+}
+async function sendRoleplayMessage(){
+ const user=auth.currentUser,textValue=$('roleplayInput').value.trim();if(!user||!activeSessionRef||!textValue)return;
+ $('sendRoleplay').disabled=true;
+ try{
+   const data={senderId:user.uid,senderName:user.displayName||'You',text:textValue,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+   await activeSessionRef.collection('messages').add(data);
+   await addRoleplayBubble('user',textValue);$('roleplayInput').value='';$('roleplayStatus').textContent='Message သိမ်းပြီးပါပြီ။';
+ }catch(e){$('roleplayStatus').textContent='Message သိမ်းမရပါ: '+e.message}
+ finally{$('sendRoleplay').disabled=false}
+}
+$('sendRoleplay').onclick=sendRoleplayMessage;
+$('roleplayInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendRoleplayMessage()}});
+$('backToStory').onclick=()=>showTab('storyDetail');
+$('backToDiscover').onclick=()=>showTab('discover');
+let publicCharacterDocs=[],publicStoryDocs=[];
+function renderDiscoverResults(){
+ const q=($('discoverSearch')?.value||'').trim().toLocaleLowerCase();
+ const list=$('publicList'),stories=$('publicStories');list.innerHTML='';stories.innerHTML='';
+ const chars=publicCharacterDocs.filter(doc=>{const d=doc.data();return [d.name,d.ownerName,d.about,d.description,d.gender].join(' ').toLocaleLowerCase().includes(q)});
+ const storyMatches=publicStoryDocs.filter(doc=>{const d=doc.data();return [d.title,d.ownerName,d.description,d.world,d.cast].join(' ').toLocaleLowerCase().includes(q)});
+ if(!chars.length)list.textContent=q?'No matching characters found.':'No public characters yet.';
+ else chars.forEach(doc=>list.append(cardFor(doc)));
+ if(!storyMatches.length)stories.textContent=q?'No matching stories found.':'No public stories yet.';
+ else storyMatches.forEach(doc=>stories.append(storyCardFor(doc)));
+}
+async function loadCharacters(){
+ const list=$('publicList'),stories=$('publicStories');list.textContent='Loading…';stories.textContent='Loading…';
+ publicCharacterDocs=[];publicStoryDocs=[];
+ try{const snap=await db.collection('characters').where('visibility','==','public').limit(100).get();snap.forEach(doc=>publicCharacterDocs.push(doc));}
+ catch(e){list.textContent='Load မရပါ: '+e.message;}
+ try{const ss=await db.collection('stories').where('visibility','==','public').limit(100).get();ss.forEach(doc=>publicStoryDocs.push(doc));}
+ catch(e){stories.textContent='Stories မဖတ်နိုင်သေးပါ။ Firestore Rules ပြင်ရန်လိုနိုင်ပါတယ်။';}
+ renderDiscoverResults();
+}
+$('discoverSearch').addEventListener('input',renderDiscoverResults);
+$('clearSearch').onclick=()=>{$('discoverSearch').value='';renderDiscoverResults();$('discoverSearch').focus()};
+async function loadMyCharacters(){const list=$('myList'),user=auth.currentUser;if(!user)return;list.textContent='Loading…';try{const snap=await db.collection('characters').where('ownerId','==',user.uid).get();list.innerHTML='';if(snap.empty){list.textContent='You have not created any characters yet.';return}snap.forEach(doc=>list.append(cardFor(doc,true)))}catch(e){list.textContent='Load မရပါ: '+e.message}}
+async function loadMyStories(){const list=$('myStories'),user=auth.currentUser;if(!user)return;list.textContent='Loading…';try{const snap=await db.collection('stories').where('ownerId','==',user.uid).get();list.innerHTML='';if(snap.empty){list.textContent='You have not created any stories yet.';return}snap.forEach(doc=>list.append(storyCardFor(doc)))}catch(e){list.textContent='Stories မဖတ်နိုင်သေးပါ။ Firestore Rules ပြင်ရန်လိုနိုင်ပါတယ်။'}}
+function editCharacter(id,d){editingId=id;$('charName').value=d.name||'';$('charGender').value=d.gender||'';$('charAge').value=d.age||'';$('charHeight').value=d.height||'';$('charAppearance').value=d.appearance||'';$('charPersonality').value=d.personality||'';$('charOccupation').value=d.occupation||'';$('charRelationship').value=d.relationshipStatus||'';$('charLikes').value=d.likesDislikes||'';$('charSecrets').value=d.secrets||'';$('charAbout').value=d.about||d.description||'';$('charGreeting').value=d.greeting||'';$('charVisibility').value=d.visibility||'public';charPhotoData=d.photo||'';$('charPhotoPreview').innerHTML=charPhotoData?'<img alt="Character image preview" src="'+charPhotoData+'">':'✦';$('charCount').textContent=$('charAbout').value.length+'/7000';$('createTitle').textContent='Edit character';$('saveCharacter').textContent='Save changes';$('cancelEdit').classList.remove('hidden');message('charStatus','');selectCreate('character');showTab('create')}
+async function deleteCharacter(id){if(!confirm('ဒီ Character ကို ဖျက်မှာ သေချာလား?'))return;try{await db.collection('characters').doc(id).delete();loadMyCharacters()}catch(e){alert('ဖျက်မရပါ: '+e.message)}}
+
+// Coze Chat Final Build: interactive local simulation modules.
+// These modules are fictional app data, not access to a real person's phone or bank.
+const worldStoreKey='coze_world_final_v1';
+function worldStore(){try{return JSON.parse(localStorage.getItem(worldStoreKey)||'{}')}catch(e){return {}}}
+function saveWorldStore(v){localStorage.setItem(worldStoreKey,JSON.stringify(v))}
+function safeText(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const worldLabels={
+ phone:['Character Phone','Messages, notes, call history, fictional browser history and photo album.'],
+ diary:['Diary','Creator-approved character diary entries and story memories.'],
+ bank:['Fictional Bank','Imaginary balance, income, expenses and transfers inside the story world only.'],
+ groups:['Group Chat','Create a fictional group and add character names. Multi-character AI replies require a connected AI backend.'],
+ social:['Character Social Media','Fictional posts, comments and likes.'],
+ relationships:['Relationships','Track friendship, trust, affection, rivalry and jealousy as story variables.'],
+ life:['Daily Life Schedule','Work, school, sleep, travel and personal routines.'],
+ world:['World Creator','Create fictional places, factions, countries and lore.'],
+ memories:['Memories & Secrets','Review and manage fictional character memories and secrets.'],
+ events:['Events & Calendar','Birthdays, anniversaries, festivals and story events.'],
+ gallery:['Memories Album','Save captions and references for shared fictional memories.'],
+ settings:['Privacy & Settings','Visibility, content preferences, account safety and data export.']
+};
+function openWorldFeature(key){
+ const root=document.getElementById('worldFeatureContent'); if(!root)return;
+ const store=worldStore(); const data=store[key]||[];
+ const [title,desc]=worldLabels[key]||['Feature',''];
+ root.innerHTML=`<div class="card" style="margin:14px 0;background:#f8fcff"><h3>${title}</h3><p class="muted">${desc}</p><div id="worldItems"></div><label>New entry</label><textarea id="worldEntry" placeholder="Write something for ${title}..."></textarea><button class="full" id="worldSave">Save entry</button><p class="note">Saved on this device as fictional demo data. Cloud sync and AI automation need secure backend services.</p></div>`;
+ const list=root.querySelector('#worldItems');
+ if(key==='bank'){
+   const balance=Number(store.bankBalance||1000);
+   list.innerHTML=`<div class="balance"><b>Fictional balance</b><h2>${balance.toLocaleString()} Coins</h2></div><label>Transfer amount</label><input id="transferAmount" type="number" min="1" placeholder="Amount"><label>Recipient character</label><input id="transferTo" placeholder="Character name"><button class="full ghost" id="transferBtn">Transfer fictional Coins</button>`;
+   root.querySelector('#transferBtn').onclick=()=>{const n=Number(root.querySelector('#transferAmount').value);const to=root.querySelector('#transferTo').value.trim();if(!Number.isFinite(n)||n<=0||n>Number(store.bankBalance||1000)||!to){alert('Amount နဲ့ လက်ခံသူကို မှန်ကန်စွာ ဖြည့်ပါ။');return}store.bankBalance=Number(store.bankBalance||1000)-n;store.bankTransactions=[{text:`Sent ${n} Coins to ${to}`,date:new Date().toLocaleString()},...(store.bankTransactions||[])];saveWorldStore(store);openWorldFeature('bank')};
+   (store.bankTransactions||[]).forEach(x=>{const p=document.createElement('p');p.className='muted';p.textContent=x.text+' · '+x.date;list.append(p)});
+ } else if(key==='groups'){
+   list.innerHTML='<label>Group name</label><input id="groupName" placeholder="Group name"><label>Members (character names, comma separated)</label><input id="groupMembers" placeholder="Character A, Character B"><button class="full ghost" id="createGroup">Create group</button><div id="groupList"></div>';
+   (store.groups||[]).forEach(g=>{const p=document.createElement('p');p.textContent=g.name+' — '+g.members.join(', ');list.append(p)});
+   root.querySelector('#createGroup').onclick=()=>{const name=root.querySelector('#groupName').value.trim(),members=root.querySelector('#groupMembers').value.split(',').map(x=>x.trim()).filter(Boolean);if(!name)return alert('Group name ဖြည့်ပါ။');store.groups=[...(store.groups||[]),{name,members}];saveWorldStore(store);openWorldFeature('groups')};
+ } else {
+   data.forEach(item=>{const p=document.createElement('p');p.className='muted';p.textContent=item.text+' · '+item.date;list.append(p)});
+ }
+ root.querySelector('#worldSave').onclick=()=>{const text=root.querySelector('#worldEntry').value.trim();if(!text)return;store[key]=[{text,date:new Date().toLocaleString()},...(store[key]||[])];saveWorldStore(store);openWorldFeature(key)};
+}
+
+</script>
+</body></html>
